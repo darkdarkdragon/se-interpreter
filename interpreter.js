@@ -398,6 +398,7 @@ TestRun.prototype.locate = function(locatorName, callback, successCallback, fail
   });
 };
 
+
 function getInterpreterListener(testRun) {
   return {
     'startTestRun': function(testRun, info) {
@@ -423,7 +424,7 @@ function getInterpreterListener(testRun) {
     'endStep': function(testRun, step, info) {
       name = step.step_name ? step.step_name + " " : "";
       if (info.success) {
-        console.log(testRun.name + ": " + "Success ".green + name + JSON.stringify(step).grey);
+        console.log(testRun.name + ": " + "Success ".green + name + stringifyStep(step).grey);
       } else {
         if (info.error) {
           console.log(testRun.name + ": " + "Failed ".red + name + util.inspect(info.error));
@@ -664,6 +665,7 @@ var opt = require('optimist')
   .default('quiet', false).describe('quiet', 'no per-step output')
   .default('noPrint', false).describe('noPrint', 'no print step output')
   .default('silent', false).describe('silent', 'no non-error output')
+  .default('hideSetTexValue', false).describe('hideSetTexValue', 'hide value of setElementText step in output')
   .default('parallel', 1).describe('parallel', 'number of tests to run in parallel')
   .describe('dataSource', 'path to data source module')
   .describe('listener', 'path to listener module')
@@ -814,4 +816,12 @@ function runNext() {
 // Spawn as many parallel runners as desired.
 for (var i = 0; i < numParallelRunners; i++) {
   runNext();
+}
+
+function stringifyStep(step) {
+  var str = JSON.stringify(step);
+  if (argv.hideSetTexValue && step.type == 'setElementText') {
+    str = str.replace(step.text, '***');
+  }
+  return str;
 }
